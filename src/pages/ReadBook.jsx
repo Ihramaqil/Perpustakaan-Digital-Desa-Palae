@@ -225,7 +225,7 @@ const ReadBook = () => {
       {/* PDF Viewer */}
       {!loading && book?.pdfUrl && !fetchError && !pdfError && (
         <div className="w-full max-w-[900px] mx-auto h-[85vh] border rounded-xl shadow overflow-hidden bg-white dark:bg-black">
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
             <Viewer
               fileUrl={book.pdfUrl}
               plugins={[pageNavPlugin]}
