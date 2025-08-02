@@ -5,6 +5,7 @@ import AdminLogin from './pages/AdminLogin';
 import Dashboard from './pages/Dashboard';
 import AdminUpload from './pages/AdminUpload';
 import Books from './pages/Books';
+import ReadBook from './pages/ReadBook';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<AdminUpload />} />
         <Route path="/books" element={<Books />} />
+        <Route path="/book/:id" element={<ReadBook />} />
       </Routes>
     </Router>
   );

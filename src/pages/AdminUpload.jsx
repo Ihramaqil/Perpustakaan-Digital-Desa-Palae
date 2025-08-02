@@ -3,11 +3,9 @@ import { db, storage } from '../firebase/config';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 import AdminLayout from '../components/AdminLayout';
-import { UploadCloud, XCircle, Eye } from 'lucide-react';
+import { UploadCloud, XCircle, Eye, Check, ChevronDown } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Listbox } from '@headlessui/react';
-import { Check, ChevronDown } from 'lucide-react';
-
 
 const AdminUpload = () => {
   const [title, setTitle] = useState('');
@@ -20,73 +18,91 @@ const AdminUpload = () => {
   const [dragOver, setDragOver] = useState(false);
   const categories = ['', 'SD', 'SMP', 'SMA', 'Lainnya'];
 
-
   const handleUpload = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!title || !author || !category || !file || !coverImage) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Data Belum Lengkap',
-      text: 'Harap isi semua data terlebih dahulu.',
-      confirmButtonColor: '#E64946'
-    });
-    return;
-  }
+    if (!title || !author || !category || !file || !coverImage) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Data Belum Lengkap',
+        text: 'Harap isi semua data terlebih dahulu.',
+        confirmButtonColor: '#E64946'
+      });
+      return;
+    }
 
-  setUploading(true);
+    if (file.size > 50 * 1024 * 1024 || coverImage.size > 30 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Ukuran File Terlalu Besar',
+        text: 'PDF max 10MB dan Cover max 5MB.',
+        confirmButtonColor: '#E64946'
+      });
+      return;
+    }
 
-  try {
-    const safeName = file.name.replace('.pdf', '').replace(/[^a-zA-Z0-9-_]/g, '_');
-    const pdfRef = ref(storage, `books/${safeName}.pdf`);
-    const coverExt = coverImage.name.split('.').pop();
-    const coverRef = ref(storage, `covers/${safeName}.${coverExt}`);
+    setUploading(true);
 
-    // Upload cover
-    const coverSnap = await uploadBytes(coverRef, coverImage);
-    const coverUrl = await getDownloadURL(coverSnap.ref);
+    try {
+      const safeName = file.name.replace('.pdf', '').replace(/[^a-zA-Z0-9-_]/g, '_');
+      const coverExt = coverImage.name.split('.').pop();
 
-    // Upload PDF
-    const uploadTaskSnap = await uploadBytesResumable(pdfRef, file);
-    const pdfUrl = await getDownloadURL(uploadTaskSnap.ref);
+      const pdfRef = ref(storage, `books/${safeName}.pdf`);
+      const coverRef = ref(storage, `covers/${safeName}.${coverExt}`);
 
-    await addDoc(collection(db, 'books'), {
-      title,
-      author,
-      kategori: category,
-      pdfUrl,
-      coverUrl,
-      uploadedAt: new Date()
-    });
+      await uploadBytes(coverRef, coverImage);
+      const coverUrl = await getDownloadURL(coverRef);
 
-    // Reset semua input
-    setTitle('');
-    setAuthor('');
-    setCategory('');
-    setFile(null);
-    setCoverImage(null);
-    setProgress(0);
-    setUploading(false);
+      const uploadTask = uploadBytesResumable(pdfRef, file);
 
-    Swal.fire({
-      icon: 'success',
-      title: 'Berhasil',
-      text: 'Buku berhasil diupload!',
-      confirmButtonColor: '#E64946'
-    });
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(Math.round(progress));
+        },
+        (error) => {
+          throw error;
+        },
+        async () => {
+          const pdfUrl = await getDownloadURL(uploadTask.snapshot.ref);
 
-  } catch (error) {
-    console.error(error);
-    setUploading(false);
-    Swal.fire({
-      icon: 'error',
-      title: 'Gagal',
-      text: 'Gagal upload file atau cover.',
-      confirmButtonColor: '#E64946'
-    });
-  }
-};
+          await addDoc(collection(db, 'books'), {
+            title,
+            author,
+            kategori: category,
+            pdfUrl,
+            coverUrl,
+            uploadedAt: new Date()
+          });
 
+          setTitle('');
+          setAuthor('');
+          setCategory('');
+          setFile(null);
+          setCoverImage(null);
+          setProgress(0);
+          setUploading(false);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Buku berhasil diupload!',
+            confirmButtonColor: '#E64946'
+          });
+        }
+      );
+    } catch (error) {
+      console.error('🔥 Upload error:', error);
+      setUploading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: 'Gagal upload file atau cover.',
+        confirmButtonColor: '#E64946'
+      });
+    }
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -102,6 +118,7 @@ const AdminUpload = () => {
     setDragOver(false);
     const droppedFile = e.dataTransfer.files[0];
     if (!droppedFile) return;
+
     if (isCover) {
       if (droppedFile?.type.startsWith('image/')) {
         setCoverImage(droppedFile);
@@ -155,30 +172,21 @@ const AdminUpload = () => {
             onChange={(e) => setAuthor(e.target.value)}
             className="p-3 rounded-lg border bg-white dark:bg-gray-900 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600"
           />
+
+          {/* Kategori */}
           <div className="w-full">
             <Listbox value={category} onChange={setCategory}>
               <div className="relative">
                 <Listbox.Button className="w-full p-3 rounded-lg border bg-white dark:bg-gray-900 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600 flex justify-between items-center">
-                  {category ? category === 'Lainnya' ? 'Buku Lainnya' : category : 'Pilih Kategori'}
+                  {category ? (category === 'Lainnya' ? 'Buku Lainnya' : category) : 'Pilih Kategori'}
                   <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </Listbox.Button>
-
                 <Listbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-gray-900 dark:text-white">
                   {categories.map((item) => (
-                    <Listbox.Option
-                      key={item}
-                      value={item}
-                      className={({ active }) =>
-                        `cursor-pointer select-none relative py-2 pl-10 pr-4 ${
-                          active ? 'bg-indigo-600 text-white' : 'text-gray-900 dark:text-white'
-                        }`
-                      }
-                    >
+                    <Listbox.Option key={item} value={item} className="cursor-pointer select-none relative py-2 pl-10 pr-4">
                       {({ selected }) => (
                         <>
-                          <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                            {item || 'Pilih Kategori'}
-                          </span>
+                          <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{item || 'Pilih Kategori'}</span>
                           {selected && (
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                               <Check className="w-4 h-4 text-white" />
@@ -192,6 +200,8 @@ const AdminUpload = () => {
               </div>
             </Listbox>
           </div>
+
+          {/* PDF Upload */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -224,12 +234,14 @@ const AdminUpload = () => {
             />
           </div>
 
+          {/* Progress */}
           {uploading && (
             <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-lg h-4 overflow-hidden">
               <div className="bg-orange-500 h-4 transition-all duration-300" style={{ width: `${progress}%` }}></div>
             </div>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={uploading}
@@ -239,6 +251,7 @@ const AdminUpload = () => {
           </button>
         </form>
 
+        {/* Preview Cover */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
