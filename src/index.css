@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -8,4 +10,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tambahkan ini di paling bawah index.css */
+.swal2-confirm,
+.swal2-cancel {
+  @apply px-4 py-2 rounded-md text-sm font-medium;
+}
+
+.swal2-confirm {
+  @apply bg-[#E64946] text-white hover:bg-red-600;
+}
+
+.swal2-cancel {
+  @apply bg-gray-300 text-black hover:bg-gray-400;
 }

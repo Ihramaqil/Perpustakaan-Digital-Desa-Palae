@@ -37,7 +37,13 @@ const BookCollection = () => {
       if (result.isConfirmed) {
         await deleteDoc(doc(db, 'books', id));
         fetchBooks();
-        Swal.fire('Terhapus!', 'Buku telah dihapus.', 'success');
+        Swal.fire({
+        icon: 'success',
+        title: 'Terhapus!',
+        text: 'Buku telah dihapus.',
+        confirmButtonColor: '#E64946'
+        });
+
       }
     });
   };
@@ -203,14 +209,24 @@ const BookCollection = () => {
                   onClick={async () => {
                     const { id, title, author, kategori } = editedBook;
                     if (!title || !author || !kategori) {
-                      Swal.fire('Gagal', 'Semua field harus diisi!', 'error');
+                      Swal.fire({
+                    icon: 'warning',
+                    title: 'Gagal',
+                    text: 'Semua field harus diisi!',
+                    confirmButtonColor: '#E64946'
+                    });
                       return;
                     }
                     await updateDoc(doc(db, 'books', id), { title, author, kategori });
                     setEditModalOpen(false);
                     setEditedBook(null);
                     fetchBooks();
-                    Swal.fire('Berhasil', 'Data buku berhasil diperbarui.', 'success');
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data buku berhasil diperbarui.',
+                    confirmButtonColor: '#E64946'
+                    });
                   }}
                   className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded"
                 >

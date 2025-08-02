@@ -30,18 +30,19 @@ export default function AdminLayout({ children }) {
       : 'text-gray-300 hover:text-white hover:bg-black hover:bg-opacity-10 hover:transform hover:scale-105';
 
   const handleLogout = () => {
-    Swal.fire({
-      title: 'Konfirmasi Logout',
-      text: 'Apakah Anda yakin ingin keluar dari sistem?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Ya, Logout',
-      cancelButtonText: 'Batal',
-      backdrop: darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(0, 0, 0, 0.4)',
-      customClass: {
-        popup: darkMode ? 'dark-popup' : '',
+ Swal.fire({
+  title: 'Konfirmasi Logout',
+  text: 'Apakah Anda yakin ingin keluar dari sistem?',
+  icon: 'question',
+  showCancelButton: true,
+  confirmButtonText: 'Ya, Logout',
+  cancelButtonText: 'Batal',
+  confirmButtonColor: '#ef4444', // merah Tailwind
+  cancelButtonColor: '#6b7280',  // gray-500 Tailwind
+  customClass: {
+    popup: darkMode ? 'dark-popup' : '',
+    confirmButton: 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md',
+    cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md'
       }
     }).then((result) => {
       if (result.isConfirmed) {

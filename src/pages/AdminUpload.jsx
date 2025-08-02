@@ -23,21 +23,39 @@ const AdminUpload = () => {
 
     if (!title || !author || !category || !file || !coverImage) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Data Belum Lengkap',
-        text: 'Harap isi semua data terlebih dahulu.',
-        confirmButtonColor: '#E64946'
-      });
+  icon: 'warning',
+  title: 'Data Belum Lengkap',
+  text: 'Harap isi semua data terlebih dahulu.',
+  confirmButtonText: 'Oke',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
       return;
     }
 
     if (file.size > 50 * 1024 * 1024 || coverImage.size > 30 * 1024 * 1024) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Ukuran File Terlalu Besar',
-        text: 'PDF max 10MB dan Cover max 5MB.',
-        confirmButtonColor: '#E64946'
-      });
+  icon: 'warning',
+  title: 'Ukuran File Terlalu Besar',
+  text: 'PDF max 10MB dan Cover max 5MB.',
+  confirmButtonText: 'Mengerti',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
       return;
     }
 
@@ -85,22 +103,41 @@ const AdminUpload = () => {
           setUploading(false);
 
           Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: 'Buku berhasil diupload!',
-            confirmButtonColor: '#E64946'
-          });
+  icon: 'success',
+  title: 'Berhasil',
+  text: 'Buku berhasil diupload!',
+  confirmButtonText: 'Mantap!',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
         }
       );
     } catch (error) {
       console.error('🔥 Upload error:', error);
       setUploading(false);
       Swal.fire({
-        icon: 'error',
-        title: 'Gagal',
-        text: 'Gagal upload file atau cover.',
-        confirmButtonColor: '#E64946'
-      });
+  icon: 'error',
+  title: 'Gagal',
+  text: 'Gagal upload file atau cover.',
+  confirmButtonText: 'Coba Lagi',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
+
     }
   };
 
@@ -124,22 +161,40 @@ const AdminUpload = () => {
         setCoverImage(droppedFile);
       } else {
         Swal.fire({
-          icon: 'warning',
-          title: 'Format Tidak Didukung',
-          text: 'Hanya gambar (PNG/JPG) yang diperbolehkan untuk cover.',
-          confirmButtonColor: '#E64946'
-        });
+  icon: 'warning',
+  title: 'Format Tidak Didukung',
+  text: 'Hanya gambar (PNG/JPG) yang diperbolehkan untuk cover.',
+  confirmButtonText: 'Oke',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
       }
     } else {
       if (droppedFile?.type === 'application/pdf') {
         setFile(droppedFile);
       } else {
         Swal.fire({
-          icon: 'warning',
-          title: 'Format Tidak Didukung',
-          text: 'Hanya file PDF yang diperbolehkan.',
-          confirmButtonColor: '#E64946'
-        });
+  icon: 'warning',
+  title: 'Format Tidak Didukung',
+  text: 'Hanya file PDF yang diperbolehkan.',
+  confirmButtonText: 'Oke',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
       }
     }
   };
@@ -302,11 +357,20 @@ const AdminUpload = () => {
                 setCoverImage(selected);
               } else {
                 Swal.fire({
-                  icon: 'warning',
-                  title: 'Format Tidak Didukung',
-                  text: 'Hanya gambar (PNG/JPG) yang diperbolehkan untuk cover.',
-                  confirmButtonColor: '#E64946'
-                });
+  icon: 'warning',
+  title: 'Format Tidak Didukung',
+  text: 'Hanya gambar (PNG/JPG) yang diperbolehkan untuk cover.',
+  confirmButtonText: 'Oke',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937',
+  color: '#f3f4f6',
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  },
+});
               }
             }}
             className="hidden"

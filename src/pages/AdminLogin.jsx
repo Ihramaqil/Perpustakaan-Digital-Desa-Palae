@@ -17,10 +17,20 @@ const AdminLogin = () => {
     e.preventDefault();
     if (!email || !password) {
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Email dan password harus diisi!',
-      });
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Email dan password harus diisi!',
+  confirmButtonText: 'Oke',
+  confirmButtonColor: '#E64946',
+  background: '#1f2937', // gray-800
+  color: '#f3f4f6', // gray-100
+  customClass: {
+    popup: 'rounded-xl',
+    confirmButton: 'bg-[#E64946] hover:bg-[#d43735] text-white px-4 py-2 rounded-md',
+    title: 'text-lg font-semibold',
+    content: 'text-sm',
+  }
+});
       return;
     }
 
