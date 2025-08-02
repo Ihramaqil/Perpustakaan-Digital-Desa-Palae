@@ -4,7 +4,7 @@ import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Swal from 'sweetalert2';
 import logo1 from '../assets/kkn.png';
-import logo2 from '../assets/Sinjai.png';
+import logo2 from '../assets/sinjai.png';
 import { ArrowRight } from 'lucide-react';
 
 const AdminLogin = () => {

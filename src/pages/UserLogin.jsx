@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 import logo1 from '../assets/kkn.png';
-import logo2 from '../assets/Sinjai.png';
+import logo2 from '../assets/sinjai.png';
 import { ArrowRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
