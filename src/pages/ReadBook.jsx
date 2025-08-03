@@ -135,14 +135,22 @@ const ReadBook = () => {
           {showDropdown && bookmarks.length > 0 && (
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
               {bookmarks.map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handleJumpToBookmark(page)}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-green-100 dark:hover:bg-gray-700"
-                >
+              <div
+                key={page}
+                className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-green-100 dark:hover:bg-gray-700"
+              >
+                <button onClick={() => handleJumpToBookmark(page)}>
                   Halaman {page + 1}
                 </button>
-              ))}
+                <button
+                  onClick={() => handleRemoveBookmark(page)}
+                  className="text-red-500 ml-2 hover:text-red-700"
+                  title="Hapus Bookmark"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
             </div>
           )}
 
