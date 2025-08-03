@@ -67,12 +67,21 @@ const ReadBook = () => {
   const handlePageChange = (e) => {
     const page = e.currentPage;
     setCurrentPage(page);
+
+    const savedProgress = JSON.parse(localStorage.getItem(`readProgress-${id}`));
+    const totalPages = savedProgress?.totalPages ?? numPages;
+
     localStorage.setItem(
       `readProgress-${id}`,
-      JSON.stringify({ page, updatedAt: new Date().toISOString() })
+      JSON.stringify({
+        page,
+        totalPages,
+        updatedAt: new Date().toISOString(),
+      })
     );
-    if (numPages > 0) {
-      const percent = Math.floor(((page + 1) / numPages) * 100);
+
+    if (totalPages > 0) {
+      const percent = Math.floor(((page + 1) / totalPages) * 100);
       setProgressPercent(percent);
     }
   };
@@ -83,6 +92,12 @@ const ReadBook = () => {
       setBookmarks(updated);
       localStorage.setItem(`bookmarks-${id}`, JSON.stringify(updated));
     }
+  };
+
+  const handleRemoveBookmark = (page) => {
+    const updated = bookmarks.filter(p => p !== page);
+    setBookmarks(updated);
+    localStorage.setItem(`bookmarks-${id}`, JSON.stringify(updated));
   };
 
   const handleJumpToBookmark = (page) => {
@@ -122,7 +137,7 @@ const ReadBook = () => {
           </button>
         </div>
 
-        {/* Custom Bookmark Dropdown */}
+        {/* Bookmark Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
@@ -135,22 +150,22 @@ const ReadBook = () => {
           {showDropdown && bookmarks.length > 0 && (
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
               {bookmarks.map((page) => (
-              <div
-                key={page}
-                className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-green-100 dark:hover:bg-gray-700"
-              >
-                <button onClick={() => handleJumpToBookmark(page)}>
-                  Halaman {page + 1}
-                </button>
-                <button
-                  onClick={() => handleRemoveBookmark(page)}
-                  className="text-red-500 ml-2 hover:text-red-700"
-                  title="Hapus Bookmark"
+                <div
+                  key={page}
+                  className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-green-100 dark:hover:bg-gray-700"
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  <button onClick={() => handleJumpToBookmark(page)}>
+                    Halaman {page + 1}
+                  </button>
+                  <button
+                    onClick={() => handleRemoveBookmark(page)}
+                    className="text-red-500 ml-2 hover:text-red-700"
+                    title="Hapus Bookmark"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -240,15 +255,30 @@ const ReadBook = () => {
               onDocumentLoad={(e) => {
                 const totalPages = e.doc.numPages;
                 setNumPages(totalPages);
+
                 const saved = JSON.parse(localStorage.getItem(`readProgress-${id}`));
-                if (saved?.page) jumpToPage(saved.page);
+                const savedPage = saved?.page ?? 0;
+
+                jumpToPage(savedPage);
+
                 setProgressPercent(
-                  saved?.page ? Math.floor(((saved.page + 1) / totalPages) * 100) : 0
+                  savedPage ? Math.floor(((savedPage + 1) / totalPages) * 100) : 0
+                );
+
+                // Simpan totalPages juga
+                localStorage.setItem(
+                  `readProgress-${id}`,
+                  JSON.stringify({
+                    page: savedPage,
+                    totalPages,
+                    updatedAt: new Date().toISOString(),
+                  })
                 );
               }}
               onPageChange={handlePageChange}
               defaultScale={SpecialZoomLevel.PageFit}
               renderLoader={() => <Spinner />}
+              onDocumentLoadError={handlePdfLoadError}
             />
           </Worker>
         </div>
