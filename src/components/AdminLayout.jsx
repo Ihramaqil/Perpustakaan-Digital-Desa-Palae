@@ -231,7 +231,6 @@ export default function AdminLayout({ children }) {
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{adminName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
                   </div>
                 </button>
               </div>

@@ -29,11 +29,53 @@ export default function AdminDashboard() {
   const [userCount, setUserCount] = useState(0);
   const [dailyData, setDailyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
-  const [yearlyData, setYearlyData] = useState([]);
+  const [yearlyData, setYearlyData] = useState({ labels: [], data: [] });
   const [chartType, setChartType] = useState('bar');
   const [usersData, setUsersData] = useState([]);
   const [showTable, setShowTable] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(usersData.length / itemsPerPage);
+  const paginatedUsers = usersData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp?.seconds) return 'Tidak diketahui';
+    return new Date(timestamp.seconds * 1000).toLocaleString('id-ID', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  };
+
+  const formatStringDate = (dateStr) => {
+    try {
+      const parts = dateStr.split(/[\/:\-,.\s]+/).map(p => parseInt(p));
+      if (parts.length < 5) return 'Tidak diketahui';
+      const [day, month, year, hour = 0, minute = 0, second = 0] = parts.length >= 6 ? parts : [...parts, 0];
+      const date = new Date(year, month - 1, day, hour, minute, second);
+      if (isNaN(date.getTime())) return 'Tidak diketahui';
+      return date.toLocaleString('id-ID', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+    } catch {
+      return 'Tidak diketahui';
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,28 +117,27 @@ export default function AdminDashboard() {
     }
   };
 
-const fetchUsersDetails = async () => {
-  try {
-    const snapshot = await getDocs(collection(db, 'users'));
-    const users = [];
-    snapshot.forEach(doc => {
-      const userData = doc.data();
-      users.push({
-        id: doc.id,
-        nama: userData.nama || userData.name || 'Tidak ada nama',
-        jenisKelamin: userData.jenisKelamin || userData.gender || 'Tidak diketahui',
-        tanggalLogin: userData.loginTime || 'Tidak diketahui',
-        tanggalDaftar:
-          userData.created_at?.seconds
-            ? new Date(userData.created_at.seconds * 1000).toLocaleString('id-ID')
-            : userData.loginTime || userData.tanggalDaftar || 'Tidak diketahui'
+  const fetchUsersDetails = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const users = [];
+      snapshot.forEach(doc => {
+        const userData = doc.data();
+        users.push({
+          id: doc.id,
+          nama: userData.nama || userData.name || 'Tidak ada nama',
+          jenisKelamin: userData.jenisKelamin || userData.gender || 'Tidak diketahui',
+          tanggalLogin: formatStringDate(userData.loginTime || userData.tanggalDaftar),
+          tanggalDaftar: userData.created_at?.seconds
+            ? formatDateTime(userData.created_at)
+            : formatStringDate(userData.loginTime || userData.tanggalDaftar)
+        });
       });
-    });
-    setUsersData(users);
-  } catch (error) {
-    console.error('Error fetching users details:', error);
-  }
-};
+      setUsersData(users);
+    } catch (error) {
+      console.error('Error fetching users details:', error);
+    }
+  };
 
   const fetchUserActivity = async () => {
     try {
@@ -107,9 +148,21 @@ const fetchUsersDetails = async () => {
 
       const now = new Date();
       snapshot.forEach(doc => {
-        const createdAt = doc.data().created_at;
-        if (!createdAt) return;
-        const date = createdAt.toDate();
+  const raw = doc.data().loginTime;
+        let date = null;
+
+        if (raw?.toDate) {
+          date = raw.toDate();
+        } else if (typeof raw === 'string') {
+          const parts = raw.split(/[\/:\-,.\s]+/).map(p => parseInt(p));
+          if (parts.length >= 3) {
+            const [day, month, year, hour = 0, minute = 0, second = 0] = parts;
+            date = new Date(year, month - 1, day, hour, minute, second);
+          }
+        }
+        if (!date || isNaN(date.getTime())) return;
+
+        if (!date) return; // Skip kalau gak valid
 
         if (date.getFullYear() === now.getFullYear()) {
           monthly[date.getMonth()]++;
@@ -125,11 +178,23 @@ const fetchUsersDetails = async () => {
 
       setDailyData(daily);
       setMonthlyData(monthly);
-      setYearlyData(Object.values(yearly));
+      setYearlyData({
+        labels: Object.keys(yearly),
+        data: Object.values(yearly),
+      });
     } catch (error) {
       console.error('Error fetching user activity:', error);
     }
   };
+
+const getPast7DaysLabels = () => {
+  const today = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (6 - i));
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+  });
+};
 
 const exportToExcel = () => {
   try {
@@ -143,7 +208,7 @@ const exportToExcel = () => {
       { Keterangan: '', Jumlah: '' },
       { Keterangan: 'Aktivitas Harian', ...Object.fromEntries(dailyData.map((val, i) => [`Hari ke-${i + 1}`, val])) },
       { Keterangan: 'Aktivitas Bulanan', ...Object.fromEntries(monthlyData.map((val, i) => [`Bulan ke-${i + 1}`, val])) },
-      { Keterangan: 'Aktivitas Tahunan', ...Object.fromEntries(yearlyData.map((val, i) => [`Tahun ke-${i + 1}`, val])) },
+      { Keterangan: 'Aktivitas Tahunan', ...Object.fromEntries(yearlyData.labels.map((year, i) => [`${year}`, yearlyData.data[i]])) },
     ];
 
     // --- Sheet 2: Detail Pembaca ---
@@ -319,24 +384,57 @@ const exportToExcel = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {usersData.map((user, index) => (
-                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{index + 1}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{user.nama}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          user.jenisKelamin === 'Laki-laki' 
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                            : 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300'
-                        }`}>
-                          {user.jenisKelamin}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.tanggalDaftar}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                {paginatedUsers.map((user, index) => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{user.nama}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        user.jenisKelamin === 'Laki-laki'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                          : 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300'
+                      }`}>
+                        {user.jenisKelamin}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.tanggalDaftar}</td>
+                  </tr>
+                ))}
+              </tbody>
               </table>
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center py-4 gap-2">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
+                  {[...Array(totalPages)].map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        currentPage === index + 1
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
               {usersData.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -368,20 +466,20 @@ const exportToExcel = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <ChartCard
-            type={chartType}
-            title="Aktivitas 7 Hari Terakhir"
-            labels={[...Array(7)].map((_, i) => `-${6 - i}h`)}
-            data={dailyData}
-            icon={<Activity className="w-6 h-6" />}
-          />
-          <ChartCard
-            type={chartType}
-            title="Aktivitas Tahunan"
-            labels={["2022", "2023", "2024"]}
-            data={yearlyData}
-            icon={<BarChart2 className="w-6 h-6" />}
-          />
+        <ChartCard
+          type={chartType}
+          title="Aktivitas 7 Hari Terakhir"
+          labels={getPast7DaysLabels()}
+          data={dailyData}
+          icon={<Activity className="w-6 h-6" />}
+        />
+        <ChartCard
+          type={chartType}
+          title="Aktivitas Tahunan"
+          labels={yearlyData.labels}
+          data={yearlyData.data}
+          icon={<BarChart2 className="w-6 h-6" />}
+        />
         </div>
       </div>
     </AdminLayout>

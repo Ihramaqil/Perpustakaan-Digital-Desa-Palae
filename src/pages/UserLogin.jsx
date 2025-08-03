@@ -12,31 +12,36 @@ const UserLogin = () => {
   const [gender, setGender] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!name || !gender) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Harap lengkapi semua data!',
-      });
-      return;
-    }
+  if (isSubmitting) return; // ✅ Blok submit ke-2 kalau udah proses
 
-    const loginTime = new Date().toLocaleString();
-    const userData = { name, gender, loginTime };
+  if (!name || !gender) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Harap lengkapi semua data!',
+    });
+    return;
+  }
 
-    try {
-      await addDoc(collection(db, 'users'), userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      navigate('/home');
-    } catch (error) {
-      setError('Terjadi kesalahan. Silakan coba lagi!');
-      console.error(error);
-    }
-  };
+  const loginTime = new Date().toLocaleString();
+  const userData = { name, gender, loginTime };
+
+  try {
+    setIsSubmitting(true); // 🔐 Blok tombol
+    await addDoc(collection(db, 'users'), userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    navigate('/home');
+  } catch (error) {
+    setError('Terjadi kesalahan. Silakan coba lagi!');
+    console.error(error);
+    setIsSubmitting(false); // Buka tombol lagi kalau gagal
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-white dark:bg-gray-900 px-4 sm:px-0">
@@ -88,9 +93,18 @@ const UserLogin = () => {
           <div className="flex justify-center pt-4">
             <button
               type="submit"
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#E64946] focus:ring-offset-2 border border-gray-300"
+              disabled={isSubmitting}
+              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-gray-300 transition-all duration-300 ease-in-out ${
+                isSubmitting
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-white text-black hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#E64946] focus:ring-offset-2'
+              }`}
             >
-              <ArrowRight className="text-black" size={24} strokeWidth={2} />
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-2 border-t-2 border-white border-t-[#E64946] rounded-full animate-spin" />
+              ) : (
+                <ArrowRight className="text-black" size={24} strokeWidth={2} />
+              )}
             </button>
           </div>
 

@@ -160,43 +160,43 @@ const BookCollection = () => {
               />
 
               <Listbox
-                value={editedBook.kategori}
-                onChange={(val) => setEditedBook({ ...editedBook, kategori: val })}
-              >
-                <div className="relative w-full">
-                  <Listbox.Button className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded flex justify-between items-center">
-                    {editedBook.kategori}
-                    <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </Listbox.Button>
+  value={editedBook.kategori}
+  onChange={(val) => setEditedBook({ ...editedBook, kategori: val })}
+>
+  <div className="relative w-full">
+    <Listbox.Button className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg flex justify-between items-center text-sm">
+      <span>{editedBook.kategori}</span>
+      <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+    </Listbox.Button>
 
-                  <Listbox.Options className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg max-h-60 overflow-auto">
-                    {['SD', 'SMP', 'SMA', 'Lainnya'].map((item) => (
-                      <Listbox.Option
-                        key={item}
-                        value={item}
-                        className={({ active }) =>
-                          `cursor-pointer select-none py-2 pl-10 pr-4 ${
-                            active ? 'bg-indigo-600 text-white' : 'text-gray-800 dark:text-white'
-                          }`
-                        }
-                      >
-                        {({ selected }) => (
-                          <>
-                            <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
-                              {item}
-                            </span>
-                            {selected && (
-                              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Check className="w-4 h-4 text-white" />
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </Listbox.Option>
-                    ))}
-                  </Listbox.Options>
-                </div>
-              </Listbox>
+    <Listbox.Options className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-auto text-sm focus:outline-none">
+      {['SD', 'SMP', 'SMA', 'Lainnya'].map((item) => (
+        <Listbox.Option
+                key={item}
+                value={item}
+                className={({ active }) =>
+                  `cursor-pointer select-none relative py-2 pl-10 pr-4 ${
+                    active ? 'bg-indigo-600 text-white' : 'text-gray-800 dark:text-white'
+                  }`
+                }
+              >
+                {({ selected }) => (
+                  <>
+                    <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                      {item}
+                    </span>
+                    {selected && (
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Check className="w-4 h-4 text-white" />
+                      </span>
+                    )}
+                  </>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </div>
+      </Listbox>
 
               <div className="flex justify-end gap-2 pt-4">
                 <button
